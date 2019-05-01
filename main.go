@@ -1,5 +1,9 @@
 package main
 
+// todo: webserver listening on listenPort
+// todo: gohtml templates for front end / form data
+// todo: function to write data from form data to file at uploadPath
+
 import (
 	"flag"
 	"fmt"
@@ -16,6 +20,5 @@ func main() {
 	uploadPathInt := *uploadPath
 
 	fmt.Println("The web server will listen on port:" + portString + " and upload files to " + uploadPathInt)
-	fmt.Printf("%T", portString)
 
 }
