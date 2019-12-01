@@ -1,50 +1,49 @@
 package main
 
 /*
-done: webserver listening on listenPort
-todo: gohtml templates for front end / form data
-todo: function to write data from form data to file at uploadPath
+todo: web server listening on listenPort
+todo: go html templates for front end / form data
 */
 
 import (
 	"flag"
 	"fmt"
-	"net/http"
-	"strconv"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
-func upload(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Method:", r.Method)
+var (
+	listenPort int
+	uploadPath string
+)
 
-	if r.Method == "GET" {
-
+func init() {
+	appLogLevel, set := os.LookupEnv("LOG_LEVEL")
+	if !set {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		logLevel, err := log.ParseLevel(appLogLevel)
+		if err != nil {
+			log.Error(err)
+		}
+		log.SetLevel(logLevel)
 	}
+	log.SetOutput(os.Stdout)
+	flag.IntVar(&listenPort, "port", 3500, "web server listening port")
+	flag.IntVar(&listenPort, "p", 3500, "short flag for web server listening port")
+	flag.StringVar(&uploadPath, "upload-path", os.TempDir(), "Directory to write uploaded files to")
+	flag.StringVar(&uploadPath, "u", os.TempDir(), "Directory to write uploaded files to")
+	flag.Parse()
+	fmt.Printf("web server port:\t %v\nupload directory:\t %v\nlog level:\t\t %v\n", listenPort, uploadPath, log.GetLevel())
+}
+
+func upload() {
+	print("This function will handle uploading files")
 }
 
 func main() {
-
-	listenPort := flag.Int("port", 3500, "Port number to serve on")
-	uploadPath := flag.String("upload-path", "/tmp", "Upload path of files")
-
-	portString := strconv.Itoa(*listenPort)
-
-	uploadPathInt := *uploadPath
-
-	fmt.Println("The web server will listen on port:" + portString + " and upload files to " + uploadPathInt)
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "This is a website server by a Go HTTP server.")
-	})
-
-	// Super simple Health check - returns 200 OK if up
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "pong")
-	})
-
-	// Upload function
-
-	http.HandleFunc("/upload", upload)
-
-	http.ListenAndServe(":"+portString, nil)
-
+	// initial configuration (logging, ports, etc.)
+	// run web server
+	upload()
 }
