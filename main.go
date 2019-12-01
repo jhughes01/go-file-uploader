@@ -1,14 +1,11 @@
 package main
 
-/*
-todo: web server listening on listenPort
-todo: go html templates for front end / form data
-*/
-
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -19,6 +16,7 @@ var (
 )
 
 func init() {
+	// check for user specified log level and set default if not found
 	appLogLevel, set := os.LookupEnv("LOG_LEVEL")
 	if !set {
 		log.SetLevel(log.InfoLevel)
@@ -29,21 +27,34 @@ func init() {
 		}
 		log.SetLevel(logLevel)
 	}
-	log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stdout) // log output stdout - see 12 factor app design
+
+	// Set and parse flags for configuration with sane defaults
 	flag.IntVar(&listenPort, "port", 3500, "web server listening port")
 	flag.IntVar(&listenPort, "p", 3500, "short flag for web server listening port")
 	flag.StringVar(&uploadPath, "upload-path", os.TempDir(), "Directory to write uploaded files to")
 	flag.StringVar(&uploadPath, "u", os.TempDir(), "Directory to write uploaded files to")
 	flag.Parse()
-	fmt.Printf("web server port:\t %v\nupload directory:\t %v\nlog level:\t\t %v\n", listenPort, uploadPath, log.GetLevel())
+
+	// summary of config after init - for testing
+	fmt.Printf("Application initialised successfully:\nweb server port:\t %v\nupload directory:\t %v\nlog level:\t\t %v\n", listenPort, uploadPath, log.GetLevel())
+}
+
+func helloServer(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "hello %s", r.URL.Path[1:])
 }
 
 func upload() {
-	print("This function will handle uploading files")
+	fmt.Println("This function will handle uploading files")
 }
 
 func main() {
 	// initial configuration (logging, ports, etc.)
 	// run web server
 	upload()
+	http.HandleFunc("/", helloServer)
+	err := http.ListenAndServe(":"+strconv.Itoa(listenPort), nil)
+	if err != nil {
+		log.Error(err)
+	}
 }
